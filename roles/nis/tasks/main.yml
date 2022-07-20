@@ -1,0 +1,146 @@
+---
+- name: Install required packages
+  apt:
+    name: nis
+    state: present
+
+- name: Set NIS default domain
+  template:
+    src: etc_defaultdomain.j2
+    dest: /etc/defaultdomain
+    owner: root
+    group: root
+    mode: '0644'
+      # TODO for master notify: Restart NIS services
+
+- name: Setup NIS Master
+  block:
+  - name: Set node as NIS Master
+    lineinfile:
+      path: /etc/default/nis
+      regexp: "^NISSERVER="
+      line: "NISSERVER=master"
+    notify: Restart NIS master services
+
+  # TODO Replace with blockinfile to allow updates to host
+  - name: Add all known servers/clients to hosts file
+    lineinfile:
+      path: /etc/hosts
+      regexp: "^{{ hostvars[item].ansible_host }}[:space:]"
+      line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
+    loop: "{{ groups['all'] }}"
+
+  - name: Specify access restrictions
+    block:
+      - name: Remove all ipv4 hosts access
+        lineinfile:
+          path: /etc/ypserv.securenets
+          regexp: '^0\.0\.0\.0'
+          state: absent
+          backup: yes
+      - name: Remove all ipv6 hosts access
+        lineinfile:
+          path: /etc/ypserv.securenets
+          regexp: "^::/0"
+          state: absent
+      - name: Add access to all hosts on master network
+        blockinfile: 
+          path: /etc/ypserv.securenets
+          block: "{{ ansible_default_ipv4.netmask }} {{ ansible_default_ipv4.network }}"
+          state: present
+    notify: Restart NIS master services
+
+  - name: Build NIS maps
+    block:
+      - name: Check if build required
+        command:
+          cmd: "make -q"
+          chdir: /var/yp
+        register: nis_mk
+        failed_when: 
+        - nis_mk.rc != 0
+        - nis_mk.rc != 1
+        changed_when: nis_mk.rc == 1
+      - name: Build required maps
+        command:
+          cmd: "make"
+          chdir: /var/yp
+        when: nis_mk.rc != 0
+        notify: Restart NIS master services
+
+  - name: Enable required services
+    service:
+      name: "{{ item }}"
+      enabled: yes
+      state: started
+    loop:
+    - rpcbind
+    - ypserv
+    - yppasswdd
+    - ypxfrd
+  when: nis_role == "master"
+
+- name: Setup NIS Client
+  block:
+  - name: Configure master on client
+    blockinfile: 
+      path: /etc/yp.conf
+      block: "domain {{ nis_domain }} server {{ nis_master }}"
+      state: present
+    notify: Restart NIS client services
+
+  - name: Set node as NIS client
+    lineinfile:
+      path: /etc/default/nis
+      regexp: "^NISSERVER="
+      line: "NISSERVER=false"
+    notify: Restart NIS client services
+
+  - name: Configure nsswitch
+    include_tasks: configure_nsswitch_compat.yml
+    loop:
+    - passwd
+    - group
+    - shadow
+    - gshadow
+
+  - name: Configure nsswitch
+    include_tasks: configure_nsswitch_nis.yml
+    loop:
+    - hosts
+    - netgroup
+
+  - name: Create home directories automatically
+    blockinfile:
+      path: /etc/pam.d/common-session
+      block: "session optional        pam_mkhomedir.so skel=/etc/skel umask=077"
+      state: present
+
+  - name: "Allow all users to connect ({{ item }}"
+    lineinfile:
+      path: "/etc/{{ item }}"
+      line: "+::::::"
+      backup: yes
+    loop:
+    - passwd
+    - shadow
+
+  - name: "Allow all groups to connect ({{ item }}"
+    lineinfile:
+      path: "/etc/{{ item }}"
+      line: "+:::"
+      backup: yes
+    loop:
+    - group
+    - gshadow
+
+  - name: Enable required services
+    service:
+      name: "{{ item }}"
+      enabled: yes
+      state: started
+    loop:
+    - rpcbind
+    - nscd
+    - ypbind
+  when: nis_role == "client"

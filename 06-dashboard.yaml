@@ -1,0 +1,115 @@
+---
+- hosts: mocha-master
+  tasks:
+  # TODO Pyslurm depends on Python 3.9 Ubuntu ships with 3.10
+  # - name: Install required Python dependencies
+  #  become: yes
+  #  package:
+  #    name:
+  #    - python3-pip
+  #    - cython3
+  #    state: present
+  # - name: Install Pyslurm library
+  #  become: yes
+  #  pip:
+  #      name: git+http://github.com/PySlurm/pyslurm.git@v21.08.4
+  
+  # Install and configure Prometheus Slurm exporter
+  - name: Install Go language support
+    become: yes
+    package:
+      name:
+      - golang
+      state: present
+  - name: Download prometheus slurm exporter
+    git:
+        repo: https://github.com/vpenso/prometheus-slurm-exporter.git
+        dest: /home/user/prometheus-slurm-exporter
+        version: '0.20'
+  - name: Build slurm exporter
+    make:
+        chdir: /home/user/prometheus-slurm-exporter
+  - name: Install slurm exporter
+    become: yes
+    copy:
+      dest: /usr/local/bin/prometheus-slurm-exporter
+      src: /home/user/prometheus-slurm-exporter/bin/prometheus-slurm-exporter
+      remote_src: yes
+      owner: root
+      group: root
+      mode: 'u=rwx,g=rwx,o=rx'
+  - name: Create service location
+    become: yes
+    file:
+      path: /usr/local/lib/systemd/system
+      state: directory
+      owner: root
+      group: root
+      mode: 'u=rwx,g=rwx,o=rx'
+  - name: Install slurm exporter service
+    become: yes
+    copy:
+      dest: /usr/local/lib/systemd/system/prometheus-slurm-exporter.service
+      src: ./files/prometheus-slurm-exporter.service
+      owner: root
+      group: root
+      mode: 'u=rw,g=r,o=r'
+  - name: Start and enable slurm exporter service
+    become: yes
+    service:
+      name: prometheus-slurm-exporter
+      state: restarted
+      enabled: yes
+  # TODO Only restart service on definition change / service binary change
+  # Install and configure Prometheus
+  - name: Install prometheus
+    become: yes
+    package:
+      name:
+      - prometheus
+      state: present
+  - name: Add slurm exporter to Prometheus sources
+    become: yes
+    blockinfile:
+      path: /etc/prometheus/prometheus.yml
+      insertafter: '^scrape_configs:'
+      block: |2
+          - job_name: 'slurm'
+            scrape_interval:  30s
+            scrape_timeout:   30s
+            static_configs:
+            - targets: ['localhost:10100']
+      validate: promtool check config %s
+  - name : Restart prometheus
+    become: yes
+    service:
+      name: prometheus
+      state: started # Check config with http://<ip>:9090/classic/graph 
+      enabled: yes
+      
+  # Install and configure grafana
+  - name: Add Grafana repository key
+    become: yes
+    apt_key:
+      url: https://packages.grafana.com/gpg.key
+      state: present
+  - name: Add Grafana repository
+    become: yes
+    apt_repository:
+      repo: "deb https://packages.grafana.com/oss/deb stable main"
+      state: present
+      filename: grafana
+  - name: Fetch packages from new repository
+    become: yes
+    apt:
+      name: grafana
+      state: present
+      update_cache: yes
+  - name: start Grafana server
+    become: yes
+    service:
+      name: grafana-server
+      state: started
+      enabled: yes
+  # TODO Set admin user and password https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#admin_user
+  # TODO Configure default dashboard (json) https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#default_home_dashboard_path

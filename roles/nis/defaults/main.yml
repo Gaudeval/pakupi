@@ -1,0 +1,6 @@
+---
+nis_domain: "nis.domain.local"
+
+nis_role: "" # master or client
+
+nis_master: ""

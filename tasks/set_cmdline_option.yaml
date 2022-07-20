@@ -1,0 +1,43 @@
+---
+- name: Disable frequency scaling
+  become: yes
+  block:
+  - name: "Compute target option value for {{ item.name }}"
+    set_fact:
+        option_value: "{% if 'value' in item %}{{ item.name }}={{ item.value }}{% else %}{{ item.name }}{% endif %}"
+        option_search: "{% if 'value' in item %}{{ item.name }}={% else %}{{ item.name }}{% endif %}"
+  - name: "Check option {{ item.name }} is configured"
+    lineinfile:
+      path: /boot/firmware/cmdline.txt
+      regexp: "{{ option_search }}"
+      state: absent
+    check_mode: yes
+    register: option_missing
+    failed_when: false
+    changed_when: not option_missing.changed
+  - name: "Check option {{ item.name }} configuration"
+    lineinfile:
+      path: /boot/firmware/cmdline.txt
+      regexp: "{{ option_value }}"
+      state: absent
+    check_mode: yes
+    register: optional_invalid
+    failed_when: false
+    changed_when: not optional_invalid.changed
+    when: not option_missing.changed
+  - name: "Change {{ item.name }} configuration"
+    lineinfile:
+      path: /boot/firmware/cmdline.txt
+      regexp: '^(.* )?{{ option_search }}[^ ]*( .*)?$'
+      line: '\1{{ option_value }}\2'
+      backrefs: yes
+    when:
+    - not option_missing.changed
+    - optional_invalid.changed
+  - name: "Set {{ item.name }} configuration"
+    lineinfile:
+      path: /boot/firmware/cmdline.txt
+      regexp: '^(.*)$'
+      line: '\1 {{ option_value }}'
+      backrefs: yes
+    when: option_missing.changed

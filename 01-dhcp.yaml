@@ -1,0 +1,32 @@
+---
+- hosts: mocha-master
+  become: yes
+  tasks:
+  - name: Gather facts from all hosts
+    ansible.builtin.setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: true
+    loop: "{{ groups['all'] }}"
+    ignore_unreachable: true
+  - name: Build DHCP host list
+    set_fact:
+      dhcp_hosts: "{{ (dhcp_hosts | default([])) + [dhcp_host_template] }}"
+    loop: "{{ groups['all'] }}"
+  - name: Setup DHCP server
+    include_role:
+      name: bertvv.dhcp
+  vars: 
+    dhcp_host_template:
+      name: "{{ item }}"
+      mac: "{{ hostvars[item].ansible_default_ipv4.macaddress | default(hostvars[item].macaddress) }}"
+      ip: "{{ hostvars[item].ansible_host }}"
+      hostname: "{{ item }}.mocha.local"
+    dhcp_subnets:
+    - ip: 192.168.64.0
+      netmask: 255.255.255.0
+      range_begin: 192.168.64.64
+      range_end: 192.168.64.127
+      domain_name_servers:
+      - 8.8.8.8
+      - 8.8.4.4
+      routers: 192.168.64.2

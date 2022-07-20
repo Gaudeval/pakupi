@@ -1,0 +1,68 @@
+---
+- hosts: mocha-worker
+  become: yes
+  tasks:
+  - name: Set CPU frequency
+    become: yes
+    lineinfile:
+      path: /boot/firmware/config.txt
+      insertafter: '^\[all\]'
+      regexp: "^#?{{ item.name }}"
+      line: "{{ item.name }}={{ item.value }}"
+    with_items:
+      - {name: "arm_freq", value: "600"}
+      - {name: "min_arm_freq",  value: "600"}
+      # - {name: "force_turbo",  value: "1"}
+    notify:
+    - Reboot worker
+  - name: Disable frequency scaling
+    include_tasks:
+        file: "./tasks/set_cmdline_option.yaml"
+    loop:
+    - { name: "cpufreq.default_governor", value: "powersave" }
+    - { name: "nosoftlockup" }
+    - { name: "skew_tick" }
+    - { name: "nowatchdog" }
+    - { name: "isolcpus", value: "2,3" }
+    - { name: "nohz_full", value: "2,3" }
+    - { name: "rcu_nocb_poll", value: "2,3" }
+      # notify: # TODO
+      # - Reboot worker
+  - name: Disable wireless connections
+    become: yes
+    blockinfile:
+        path: /boot/firmware/config.txt
+        block: |
+            [all]
+            dtoverlay=pi3-disable-bt
+            # dtoverlay=pi3-disable-wifi
+    notify:
+    - Reboot worker
+  - name: Allow all users capability to set real-time priorities
+    # The capability is required for using chrt (see `man chrt`)
+    # Capabilities are assigned to processes, the following thus
+    # ensures all process ran through `chrt` will have the right
+    # capability.
+    # The settings can be checked with `getcap /usr/bin/chrt`.
+    # See `man capabilities` and `man cap_from_text` for more
+    # information about the format.
+    become: yes
+    capabilities:
+      path: /usr/bin/chrt
+      capability: cap_sys_nice=ep
+      state: present    
+  - name: "Disable IRQ balancing on cores 2 and 3"
+    lineinfile:
+      path: /etc/default/irqbalance
+      regexp: '^#?IRQBALANCE_BANNED_CPULIST='
+      line: 'IRQBALANCE_BANNED_CPULIST=2,3'
+    notify:
+    - Restart irqbalance
+
+  handlers:
+    - name: Reboot worker
+      reboot:
+    - name: Restart irqbalance
+      service:
+        name: irqbalance
+        state: restarted

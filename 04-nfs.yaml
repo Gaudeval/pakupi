@@ -1,0 +1,30 @@
+---
+- hosts: mocha-master
+  become: yes
+  tasks:
+  - name: Create export folder
+    file:
+      path: /exports/mocha
+      state: directory
+      mode: '0777'
+  - name: Setup NFS server
+    include_role:
+      name: geerlingguy.nfs
+  vars:
+    nfs_exports:
+    - "/exports/mocha *(rw,sync,no_root_squash,no_subtree_check)"
+- hosts: mocha-worker
+  become: yes
+  tasks:
+  - name: Install required NFS packages
+    apt:
+      name: nfs-common
+      state: present
+  - name: Mount NFS share
+    ansible.posix.mount:
+      backup: yes
+      fstype: nfs
+      opts: "rw,sync,hard"
+      path: "/shared/mocha"
+      src: "mocha-master:/exports/mocha"
+      state: mounted

@@ -1,0 +1,19 @@
+---
+- name: Restart NIS mater services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+  - rpcbind
+  - ypserv
+  - yppasswdd
+  - ypxfrd
+
+- name: Restart NIS client services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+  - rpcbind
+  - nscd
+  - ypbind

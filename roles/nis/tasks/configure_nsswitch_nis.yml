@@ -1,0 +1,20 @@
+---
+- name: "Check nis directive exists for {{ item }}"
+  lineinfile:
+    path: /etc/nsswitch.conf
+    regexp: '^{{ item }}:.*nis.*$'
+    state: absent
+  check_mode: yes
+  register: nis_nsswitch_configured
+  failed_when: false
+  changed_when: not nis_nsswitch_configured.changed
+- name: Add compat directive
+  block:
+  - name: "Insert nis directive for {{ item }}"
+    lineinfile:
+      path: /etc/nsswitch.conf
+      regexp: '^{{ item }}:(\s*)(.*)?$'
+      line: '{{ item }}:\1nis \2'
+      backrefs: yes
+      backup: yes
+  when: nis_nsswitch_configured.changed
