@@ -1,0 +1,13 @@
+[Unit]
+Description=Prometheus SLURM Exporter
+After=syslog.target
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/prometheus-slurm-exporter -listen-address :10100
+Type=simple
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target
