@@ -1,5 +1,5 @@
 ---
-- name: Restart NIS mater services
+- name: Restart NIS master services
   service:
     name: "{{ item }}"
     state: restarted
