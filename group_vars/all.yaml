@@ -1,0 +1,12 @@
+---
+pakupi_domain: "pakupi.local"
+# DHCP Configuration
+pakupi_dhcp_network: 192.168.64.0
+pakupi_dhcp_netmask: 255.255.255.0
+pakupi_dhcp_range:
+  begin: 192.168.64.64
+  end: 192.168.64.127
+pakupi_dhcp_dns:
+- 8.8.8.8
+- 8.8.4.4
+pakupi_dhcp_gateway: 

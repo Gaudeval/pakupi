@@ -12,6 +12,19 @@
     set_fact:
       dhcp_hosts: "{{ (dhcp_hosts | default([])) + [dhcp_host_template] }}"
     loop: "{{ groups['all'] }}"
+  - name: Build DHCP default range configuration
+    set_fact:
+      dhcp_subnets:
+      - ip: "{{ pakupi_dhcp_network }}"
+        netmask: "{{ pakupi_dhcp_netmask }}"
+        range_begin: "{{ pakupi_dhcp_range.begin }}"
+        range_end: "{{ pakupi_dhcp_range.end }}"
+        domain_name_servers: "{{ pakupi_dhcp_dns }}"
+        # TODO Check and set routers if gateway set
+        # routers: "{{ pakupi_dhcp_gateway }}"
+  - name: DBG
+    debug:
+      msg: "{{ dhcp_subnets }}"
   - name: Setup DHCP server
     include_role:
       name: bertvv.dhcp
@@ -20,13 +33,5 @@
       name: "{{ item }}"
       mac: "{{ hostvars[item].ansible_default_ipv4.macaddress | default(hostvars[item].macaddress) }}"
       ip: "{{ hostvars[item].ansible_host }}"
-      hostname: "{{ item }}.mocha.local"
-    dhcp_subnets:
-    - ip: 192.168.64.0
-      netmask: 255.255.255.0
-      range_begin: 192.168.64.64
-      range_end: 192.168.64.127
-      domain_name_servers:
-      - 8.8.8.8
-      - 8.8.4.4
-      # routers: 192.168.64.2
+      hostname: "{{ item }}.{{ pakupi_domain }}"
+
