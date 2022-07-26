@@ -38,17 +38,19 @@
           regexp: '^0\.0\.0\.0'
           state: absent
           backup: yes
+        notify: Restart NIS master services
       - name: Remove all ipv6 hosts access
         lineinfile:
           path: /etc/ypserv.securenets
           regexp: "^::/0"
           state: absent
+        notify: Restart NIS master services
       - name: Add access to all hosts on master network
         blockinfile: 
           path: /etc/ypserv.securenets
           block: "{{ ansible_default_ipv4.netmask }} {{ ansible_default_ipv4.network }}"
           state: present
-    notify: Restart NIS master services
+        notify: Restart NIS master services
 
   - name: Build NIS maps
     block:
