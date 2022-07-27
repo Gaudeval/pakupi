@@ -4,7 +4,7 @@
   tasks:
   - name: Create export folder
     file:
-      path: /exports/mocha
+      path: "{{ pakupi_nfs_export }}"
       state: directory
       mode: '0777'
   - name: Setup NFS server
@@ -12,7 +12,7 @@
       name: geerlingguy.nfs
   vars:
     nfs_exports:
-    - "/exports/mocha *(rw,sync,no_root_squash,no_subtree_check)"
+    - "{{ pakupi_nfs_export }} *(rw,sync,no_root_squash,no_subtree_check)"
 - hosts: mocha-worker
   become: yes
   tasks:
@@ -25,6 +25,6 @@
       backup: yes
       fstype: nfs
       opts: "rw,sync,hard"
-      path: "/shared/mocha"
-      src: "mocha-master:/exports/mocha"
+      path: "{{ pakupi_nfs_import }}"
+      src: "{{ hostvars[groups['mocha-master']|first].inventory_hostname }}:{{ pakupi_nfs_export }}"
       state: mounted
