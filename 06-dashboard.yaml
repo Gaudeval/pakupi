@@ -21,23 +21,30 @@
       name:
       - golang
       state: present
-  - name: Download prometheus slurm exporter
-    git:
+  - name: Setup slurm exporter
+    block:
+    - name: Create temporary build directory
+      tempfile:
+        state: directory
+        suffix: slurm
+      register: pse_builddir
+    - name: Download prometheus slurm exporter
+      git:
         repo: https://github.com/vpenso/prometheus-slurm-exporter.git
-        dest: /home/user/prometheus-slurm-exporter
+        dest: "{{ pse_builddir }}/prometheus-slurm-exporter"
         version: '0.20'
-  - name: Build slurm exporter
-    make:
-        chdir: /home/user/prometheus-slurm-exporter
-  - name: Install slurm exporter
-    become: yes
-    copy:
-      dest: /usr/local/bin/prometheus-slurm-exporter
-      src: /home/user/prometheus-slurm-exporter/bin/prometheus-slurm-exporter
-      remote_src: yes
-      owner: root
-      group: root
-      mode: 'u=rwx,g=rwx,o=rx'
+    - name: Build slurm exporter
+      make:
+        chdir: "{{ pse_builddir }}/prometheus-slurm-exporter"
+    - name: Install slurm exporter
+      become: yes
+      copy:
+        dest: /usr/local/bin/prometheus-slurm-exporter
+        src: "{{ pse_builddir }}/prometheus-slurm-exporter/bin/prometheus-slurm-exporter"
+        remote_src: yes
+        owner: root
+        group: root
+        mode: 'u=rwx,g=rwx,o=rx'
   - name: Create service location
     become: yes
     file:
