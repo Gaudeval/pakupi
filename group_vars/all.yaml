@@ -9,4 +9,14 @@ pakupi_dhcp_range:
 pakupi_dhcp_dns:
 - 8.8.8.8
 - 8.8.4.4
-pakupi_dhcp_gateway: 
+pakupi_dhcp_gateway: # TODO Implement
+
+# NIS Configuration
+pakupi_nis_master: 192.168.64.1 # TODO Compute from facts
+pakupi_nis_domain: "nis.pakupi.local"
+
+# Slurm Configuration
+
+# NFS Configuration
+pakupi_nfs_export: "/exports/pakupi"
+pakupi_nfs_import: "/shared/pakupi"

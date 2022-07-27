@@ -1,4 +1,9 @@
 ---
+- hosts: all
+  tasks:
+  - set_fact:
+      nis_domain: "{{ pakupi_nis_domain }}"
+      nis_master: "{{ pakupi_nis_master }}"
 - hosts: mocha-master
   become: yes
   tasks:
@@ -7,7 +12,6 @@
       name: nis
   vars: 
     nis_role: "master"
-    nis_domain: "nis.mocha.local"
 
 - hosts: mocha-worker
   become: yes
@@ -17,6 +21,4 @@
       name: nis
   vars: 
     nis_role: "client"
-    nis_master: "192.168.64.1"
-    nis_domain: "nis.mocha.local"
 
