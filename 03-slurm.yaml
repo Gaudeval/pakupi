@@ -1,4 +1,40 @@
 ---
+- hosts: 
+  - mocha-master
+  - mocha-worker
+  gather_facts: yes
+  tasks:
+  - name: "Set hostname to {{ inventory_hostname }}"
+    become: yes
+    ansible.builtin.hostname:
+      name: "{{ inventory_hostname }}"
+      use: systemd
+  - name: Build Slurm user information
+    set_fact:
+      slurm_user:
+        uid: "{{ hostvars[groups['mocha-master']|first].ansible_user_uid }}"
+        gid: "{{ hostvars[groups['mocha-master']|first].ansible_user_gid }}"
+        name: "{{ hostvars[groups['mocha-master']|first].ansible_user }}"
+        group: "{{ hostvars[groups['mocha-master']|first].ansible_user }}"
+      slurm_create_user: no
+      slurm_create_dirs: yes
+      slurm_nodes: "{{ slurm_nodes }}"
+      slurm_partitions: "{{ slurm_partitions }}"
+      slurm_config:
+        SlurmctldHost: "{{ hostvars[groups['mocha-master']|first].inventory_hostname }}"
+        SlurmctldLogFile: "/var/log/slurm/slurmctld.log"
+        SlurmdSpoolDir: "/var/lib/slurm/slurmd"
+        SlurmdLogFile: "/var/log/slurm/slurmd.log"
+        SlurmctldPidFile: "/var/run/slurm/slurmctld.pid"
+        SlurmdPidFile: "/var/run/slurm/slurmd.pid"
+        StateSaveLocation: "/var/lib/slurm/slurmctld"
+        ReturnToService: 2
+      slurm_munge_key: "./files/munge.key"
+      slurm_config_dir: "/etc/slurm"
+  vars:
+    slurm_partitions: "{{ lookup('template', 'slurm_partitions.yml.j2') }}"
+    slurm_nodes: "{{ lookup('template', 'slurm_nodes.yml.j2') }}"
+      
 - hosts: mocha-master
   become: yes
   tasks:
@@ -18,32 +54,6 @@
       state: started
   vars: 
     slurm_roles: ["controller"]
-    slurm_create_user: no
-    slurm_create_dirs: yes
-    slurm_user:
-      comment: "Slurm Workload Manager"
-      gid: 1000
-      group: user
-      name: user
-      uid: 1000
-    slurm_nodes:
-    - name: "mocha-worker"
-      CoresPerSocket: 1
-      Sockets: 1
-      ThreadsPerCore: 1
-    slurm_partitions:
-    - name: pi
-      Default: YES
-      MaxTime: UNLIMITED
-      Nodes: "mocha-worker"
-    slurm_config:
-      SlurmctldHost: "mocha-master"
-      SlurmctldLogFile: "/var/log/slurm/slurmctld.log"
-      SlurmdSpoolDir: "/var/lib/slurm/slurmd"
-      SlurmdLogFile: "/var/log/slurm/slurmd.log"
-      ReturnToService: 2
-    slurm_munge_key: "./files/munge.key"
-    slurm_config_dir: "/etc/slurm"
 
 - hosts: mocha-worker
   become: yes
@@ -71,29 +81,3 @@
       state: started
   vars:
     slurm_roles: ["exec"]
-    slurm_create_user: no
-    slurm_create_dirs: yes
-    slurm_user:
-      comment: "Slurm Workload Manager"
-      gid: 1000
-      group: user
-      name: user
-      uid: 1000
-    slurm_nodes:
-    - name: "mocha-worker"
-      CoresPerSocket: 1
-      Sockets: 1
-      ThreadsPerCore: 1
-    slurm_partitions:
-    - name: pi
-      Default: YES
-      MaxTime: UNLIMITED
-      Nodes: "mocha-worker"
-    slurm_config:
-      SlurmctldHost: "mocha-master"
-      SlurmctldLogFile: "/var/log/slurm/slurmctld.log"
-      SlurmdLogFile: "/var/log/slurm/slurmd.log"
-      SlurmdSpoolDir: "/var/lib/slurm/slurmd"
-      ReturnToService: 2
-    slurm_munge_key: "./files/munge.key"
-    slurm_config_dir: "/etc/slurm"

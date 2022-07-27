@@ -1,0 +1,18 @@
+[
+  {
+    "name": "mocha-worker",
+    "Default": "YES",
+    "MaxTime": "UNLIMITED",
+    "Nodes": "ALL",
+  },
+  {% for partition in pakupi_slurm_partitions %}
+    {% if partition != "mocha-worker" %}
+    {
+    "name": "{{ partition }}",
+    "Default": "NO",
+    "MaxTime": "UNLIMITED",
+    "Nodes": "{{ ",".join(groups[partition]) }}",
+  },
+    {% endif %}
+  {% endfor %} 
+]
