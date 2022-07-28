@@ -6,7 +6,7 @@
     "Nodes": "ALL",
   },
   {% for partition in pakupi_slurm_partitions %}
-    {% if partition != "mocha-worker" %}
+    {% if partition != "mocha-worker" and partition in groups %}
     {
     "name": "{{ partition }}",
     "Default": "NO",
