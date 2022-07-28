@@ -1,4 +1,12 @@
 ---
+# - hosts: localhost
+  # gather_facts: no
+  # tasks:
+  # - name: Validate the Slurm partition definition
+    # fail:
+      # msg: "Unknown Ansible group '{{ item }}', please create the group in your inventory or remove the group from `pakupi_slurm_partitions`."
+    # loop: "{{ pakupi_slurm_partitions }}"
+    # when: item not in groups
 - hosts: 
   - mocha-master
   - mocha-worker
