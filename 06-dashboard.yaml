@@ -33,11 +33,14 @@
         repo: https://github.com/vpenso/prometheus-slurm-exporter.git
         dest: "{{ pse_builddir }}/prometheus-slurm-exporter"
         version: '0.20'
+    - name: "Fix unknown variables on build (Gaudeval/pakupi/issues/14)"
+      lineinfile:
+        path: "{{ pse_builddir }}/prometheus-slurm-exporter/Makefile"
+        regexp: '^SHELL :='
+        line: 'SHELL := $(shell which bash) -e -o pipefail'
     - name: Build slurm exporter
       make:
         chdir: "{{ pse_builddir }}/prometheus-slurm-exporter"
-      environment:
-        PS1: "" # FIX Gaudeval/pakupi/issues/14 
     - name: Install slurm exporter
       become: yes
       copy:
