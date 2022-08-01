@@ -1,0 +1,42 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+  - name: Check groups
+    debug:
+      msg: "Hello World!"
+# TODO Mount /home as NFS directory
+- hosts: mocha-worker
+  become: yes
+  tasks:
+  - name: Disable overlayroot
+    include_tasks:
+        file: "./tasks/set_cmdline_option.yaml"
+    loop:
+    - { name: "overlayroot", value: "disabled" }
+  - reboot:
+  - package:
+      name: overlayroot
+      state: present
+  - name: Set overlayroot
+    lineinfile:
+      path: /etc/overlayroot.conf
+      regexp: "^overlayroot="
+      line: "overlayroot=tmpfs:recurse=0"
+    notify:
+    - Reboot worker
+  - name: Activate overlayroot
+    include_tasks:
+        file: "./tasks/set_cmdline_option.yaml"
+    loop:
+    - { name: "overlayroot", value: "", state: "absent" }
+  - reboot:
+  handlers:
+    - name: Reboot worker
+      reboot:
+
+# TODO Reboot?
+# TODO Add option to deactivate overlay
+
+      
