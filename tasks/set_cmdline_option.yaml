@@ -4,7 +4,7 @@
   block:
   - name: "Compute target option value for {{ item.name }}"
     set_fact:
-        option_value: "{% if 'value' in item %}{{ item.name }}={{ item.value }}{% else %}{{ item.name }}{% endif %}"
+        option_value: "{% if 'state' in item and item['state'] == 'absent' %}{% elif 'value' in item %}{{ item.name }}={{ item.value }}{% else %}{{ item.name }}{% endif %}"
         option_search: "{% if 'value' in item %}{{ item.name }}={% else %}{{ item.name }}{% endif %}"
   - name: "Check option {{ item.name }} is configured"
     lineinfile:
@@ -34,6 +34,16 @@
     when:
     - not option_missing.changed
     - optional_invalid.changed
+  - name: "Remove {{ item.name }} configuration"
+    lineinfile:
+      path: /boot/firmware/cmdline.txt
+      regexp: '^(.* )?{{ option_search }}[^ ]*( .*)?$'
+      line: '\1\2'
+      backrefs: yes
+    when:
+    - not option_missing.changed
+    - "'state' in item"
+    - "item['state'] == 'absent'"
   - name: "Set {{ item.name }} configuration"
     lineinfile:
       path: /boot/firmware/cmdline.txt
