@@ -20,7 +20,7 @@
     # when: item not in groups
 - hosts: 
   - pakupi_master
-  - mocha-worker
+  - pakupi_worker
   gather_facts: yes
   tasks:
   - name: "Set hostname to {{ inventory_hostname }}"
@@ -74,7 +74,7 @@
   vars: 
     slurm_roles: ["controller"]
 
-- hosts: mocha-worker
+- hosts: pakupi_worker
   become: yes
   tasks:
   - name: Setup slurm workers

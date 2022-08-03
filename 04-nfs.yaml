@@ -13,7 +13,7 @@
   vars:
     nfs_exports:
     - "{{ pakupi_nfs_export }} *(rw,sync,no_root_squash,no_subtree_check)"
-- hosts: mocha-worker
+- hosts: pakupi_worker
   become: yes
   tasks:
   - name: Install required NFS packages

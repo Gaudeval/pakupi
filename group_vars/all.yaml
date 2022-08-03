@@ -17,7 +17,7 @@ pakupi_nis_domain: "nis.pakupi.local"
 
 # Slurm Configuration
 pakupi_slurm_partitions:
-- mocha-worker
+- pakupi_worker
 
 # NFS Configuration
 pakupi_nfs_export: "/exports/pakupi"

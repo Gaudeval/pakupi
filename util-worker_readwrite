@@ -1,6 +1,6 @@
 ---
 # TODO Mount /home as NFS directory
-- hosts: mocha-worker
+- hosts: pakupi_worker
   become: yes
   tasks:
   - name: Disable overlayroot
