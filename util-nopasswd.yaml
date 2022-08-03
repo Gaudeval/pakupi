@@ -5,7 +5,7 @@
   tasks:
   - name: Remove requirement for password on sudo
     lineinfile:
-      path: /etc/sudoers.d/50-mocha-nopasswd
+      path: /etc/sudoers.d/50-pakupi-nopasswd
       state: present
       regexp: '^%sudo ALL='
       line: '%sudo ALL=(ALL:ALL) NOPASSWD: ALL'

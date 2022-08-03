@@ -1,5 +1,5 @@
 ---
-- hosts: mocha-master
+- hosts: pakupi_master
   become: yes
   tasks:
   - name: Create export folder
@@ -13,7 +13,7 @@
   vars:
     nfs_exports:
     - "{{ pakupi_nfs_export }} *(rw,sync,no_root_squash,no_subtree_check)"
-- hosts: mocha-worker
+- hosts: pakupi_worker
   become: yes
   tasks:
   - name: Install required NFS packages
@@ -26,5 +26,5 @@
       fstype: nfs
       opts: "rw,sync,hard"
       path: "{{ pakupi_nfs_import }}"
-      src: "{{ hostvars[groups['mocha-master']|first].inventory_hostname }}:{{ pakupi_nfs_export }}"
+      src: "{{ hostvars[groups['pakupi_master']|first].inventory_hostname }}:{{ pakupi_nfs_export }}"
       state: mounted

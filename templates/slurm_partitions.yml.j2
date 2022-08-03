@@ -1,12 +1,12 @@
 [
   {
-    "name": "mocha-worker",
+    "name": "pakupi_worker",
     "Default": "YES",
     "MaxTime": "UNLIMITED",
     "Nodes": "ALL",
   },
   {% for partition in pakupi_slurm_partitions %}
-    {% if partition != "mocha-worker" and partition in groups %}
+    {% if partition != "pakupi_worker" and partition in groups %}
     {
     "name": "{{ partition }}",
     "Default": "NO",

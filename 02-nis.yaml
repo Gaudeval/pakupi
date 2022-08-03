@@ -1,14 +1,14 @@
 ---
-- hosts: mocha-master
+- hosts: pakupi_master
   gather_facts: yes
 - hosts: all
   tasks:
   - set_fact:
       nis_domain: "{{ pakupi_nis_domain }}"
-      nis_master: "{{  hostvars[groups['mocha-master'] | first].ansible_facts.all_ipv4_addresses | ansible.utils.ipaddr(pakupi_net) | first }}"
+      nis_master: "{{  hostvars[groups['pakupi_master'] | first].ansible_facts.all_ipv4_addresses | ansible.utils.ipaddr(pakupi_net) | first }}"
     vars:
       pakupi_net: "{{ pakupi_network }}/{{ pakupi_network_mask }}"
-- hosts: mocha-master
+- hosts: pakupi_master
   become: yes
   tasks:
   - name: Setup NIS server
@@ -17,7 +17,7 @@
   vars: 
     nis_role: "master"
 
-- hosts: mocha-worker
+- hosts: pakupi_worker
   become: yes
   tasks:
   - name: Setup NIS client

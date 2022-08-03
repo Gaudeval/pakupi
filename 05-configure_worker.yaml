@@ -1,5 +1,5 @@
 ---
-- hosts: mocha-worker
+- hosts: pakupi_worker
   become: yes
   tasks:
   - name: Set CPU frequency
