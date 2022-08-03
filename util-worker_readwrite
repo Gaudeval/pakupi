@@ -1,0 +1,16 @@
+---
+# TODO Mount /home as NFS directory
+- hosts: mocha-worker
+  become: yes
+  tasks:
+  - name: Disable overlayroot
+    include_tasks:
+        file: "./tasks/set_cmdline_option.yaml"
+    loop:
+    - { name: "overlayroot", value: "disabled" }
+  - reboot:
+
+# TODO Reboot?
+# TODO Add option to deactivate overlay
+
+      
