@@ -3,12 +3,6 @@
 - hosts: mocha-worker
   become: yes
   tasks:
-  - name: Disable overlayroot
-    include_tasks:
-        file: "./tasks/set_cmdline_option.yaml"
-    loop:
-    - { name: "overlayroot", value: "disabled" }
-  - reboot:
   - package:
       name: overlayroot
       state: present
@@ -23,7 +17,6 @@
     loop:
     - { name: "overlayroot", value: "", state: "absent" }
   - reboot:
-# TODO Reboot?
 # TODO Add option to deactivate overlay
 
       
