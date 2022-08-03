@@ -1,5 +1,5 @@
 ---
-- hosts: pakupi_master
+- hosts: pakupi_controller
   become: yes
   tasks:
   - name: Create export folder
@@ -26,5 +26,5 @@
       fstype: nfs
       opts: "rw,sync,hard"
       path: "{{ pakupi_nfs_import }}"
-      src: "{{ hostvars[groups['pakupi_master']|first].inventory_hostname }}:{{ pakupi_nfs_export }}"
+      src: "{{ hostvars[groups['pakupi_controller']|first].inventory_hostname }}:{{ pakupi_nfs_export }}"
       state: mounted

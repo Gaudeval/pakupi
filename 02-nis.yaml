@@ -1,14 +1,14 @@
 ---
-- hosts: pakupi_master
+- hosts: pakupi_controller
   gather_facts: yes
 - hosts: all
   tasks:
   - set_fact:
       nis_domain: "{{ pakupi_nis_domain }}"
-      nis_master: "{{  hostvars[groups['pakupi_master'] | first].ansible_facts.all_ipv4_addresses | ansible.utils.ipaddr(pakupi_net) | first }}"
+      nis_master: "{{  hostvars[groups['pakupi_controller'] | first].ansible_facts.all_ipv4_addresses | ansible.utils.ipaddr(pakupi_net) | first }}"
     vars:
       pakupi_net: "{{ pakupi_network }}/{{ pakupi_network_mask }}"
-- hosts: pakupi_master
+- hosts: pakupi_controller
   become: yes
   tasks:
   - name: Setup NIS server
