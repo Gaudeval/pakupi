@@ -27,7 +27,7 @@
       msg: "Ansible group '{{ item }}' does not exist"
     when: item not in groups
     loop: "{{ pakupi_slurm_partitions }}"    
-- hosts: pakupi_master
+- hosts: pakupi_controller
   tasks:
   - name: Define pakupi network
     set_fact:

@@ -1,5 +1,5 @@
 ---
-- hosts: pakupi_master
+- hosts: pakupi_controller
   become: yes
   tasks:
   - name: Gather facts from all hosts
