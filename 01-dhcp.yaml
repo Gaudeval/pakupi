@@ -15,8 +15,8 @@
   - name: Build DHCP default range configuration
     set_fact:
       dhcp_subnets:
-      - ip: "{{ pakupi_dhcp_network }}"
-        netmask: "{{ pakupi_dhcp_netmask }}"
+      - ip: "{{ pakupi_network }}"
+        netmask: "{{ pakupi_network_mask }}"
         range_begin: "{{ pakupi_dhcp_range.begin }}"
         range_end: "{{ pakupi_dhcp_range.end }}"
         domain_name_servers: "{{ pakupi_dhcp_dns }}"
