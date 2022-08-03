@@ -1,0 +1,30 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+  - name: Define pakupi network
+    set_fact:
+      pakupi_net: "{{ pakupi_network }}/{{ pakupi_network_mask }}"
+  - name: Check pakupi network definition
+    fail:
+      msg: "Invalid pakupi network definition"
+    when: (pakupi_network | ansible.utils.ipaddr(pakupi_network)) != pakupi_network
+  - name: Check pakupi network mask definition
+    fail:
+      msg: "Invalid pakupi network mask definition"
+    when: not pakupi_net | ansible.utils.ipaddr('net')
+  - name: Check pakupi DHCP range definition
+    fail:
+      msg: "Invalid pakupi DHCP range begin"
+    when: not pakupi_dhcp_range.begin | ansible.utils.ipaddr(pakupi_net)
+  - name: Check pakupi DHCP range definition
+    fail:
+      msg: "Invalid pakupi DHCP range end"
+    when: not pakupi_dhcp_range.end | ansible.utils.ipaddr(pakupi_net)
+    
+  
+
+# the pakupi domain is a valid one
+# the controller has an address on the pakupi network
+# the slurm partitions exist in the inventory
