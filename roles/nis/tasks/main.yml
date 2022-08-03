@@ -48,7 +48,7 @@
       - name: Add access to all hosts on master network
         blockinfile: 
           path: /etc/ypserv.securenets
-          block: "{{ ansible_default_ipv4.netmask }} {{ ansible_default_ipv4.network }}"
+          block: "{{ pakupi_network_mask }} {{ pakupi_network }}"
           state: present
         notify: Restart NIS master services
 
