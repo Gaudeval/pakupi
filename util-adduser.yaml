@@ -1,5 +1,5 @@
 ---
-- hosts: mocha-master
+- hosts: pakupi_master
   become: yes
   tasks:    
   - name: Add user '{{ pakupi_user }}' to cluster

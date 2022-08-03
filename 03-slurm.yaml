@@ -1,5 +1,5 @@
 ---
-- hosts: mocha-master
+- hosts: pakupi_master
   become: yes
   tasks:
   - name: Install munge on the Controller
@@ -19,7 +19,7 @@
     # loop: "{{ pakupi_slurm_partitions }}"
     # when: item not in groups
 - hosts: 
-  - mocha-master
+  - pakupi_master
   - mocha-worker
   gather_facts: yes
   tasks:
@@ -31,16 +31,16 @@
   - name: Build Slurm user information
     set_fact:
       slurm_user:
-        uid: "{{ hostvars[groups['mocha-master']|first].ansible_user_uid }}"
-        gid: "{{ hostvars[groups['mocha-master']|first].ansible_user_gid }}"
-        name: "{{ hostvars[groups['mocha-master']|first].ansible_user }}"
-        group: "{{ hostvars[groups['mocha-master']|first].ansible_user }}"
+        uid: "{{ hostvars[groups['pakupi_master']|first].ansible_user_uid }}"
+        gid: "{{ hostvars[groups['pakupi_master']|first].ansible_user_gid }}"
+        name: "{{ hostvars[groups['pakupi_master']|first].ansible_user }}"
+        group: "{{ hostvars[groups['pakupi_master']|first].ansible_user }}"
       slurm_create_user: no
       slurm_create_dirs: yes
       slurm_nodes: "{{ slurm_nodes }}"
       slurm_partitions: "{{ slurm_partitions }}"
       slurm_config:
-        SlurmctldHost: "{{ hostvars[groups['mocha-master']|first].inventory_hostname }}"
+        SlurmctldHost: "{{ hostvars[groups['pakupi_master']|first].inventory_hostname }}"
         SlurmctldLogFile: "/var/log/slurm/slurmctld.log"
         SlurmdSpoolDir: "/var/lib/slurm/slurmd"
         SlurmdLogFile: "/var/log/slurm/slurmd.log"
@@ -48,13 +48,13 @@
         SlurmdPidFile: "/var/run/slurm/slurmd.pid"
         StateSaveLocation: "/var/lib/slurm/slurmctld"
         ReturnToService: 2
-      slurm_munge_key: "./files/{{ hostvars[groups['mocha-master']|first].inventory_hostname }}/etc/munge/munge.key"
+      slurm_munge_key: "./files/{{ hostvars[groups['pakupi_master']|first].inventory_hostname }}/etc/munge/munge.key"
       slurm_config_dir: "/etc/slurm"
   vars:
     slurm_partitions: "{{ lookup('template', 'slurm_partitions.yml.j2') }}"
     slurm_nodes: "{{ lookup('template', 'slurm_nodes.yml.j2') }}"
       
-- hosts: mocha-master
+- hosts: pakupi_master
   become: yes
   tasks:
   - name: Setup slurm controller
