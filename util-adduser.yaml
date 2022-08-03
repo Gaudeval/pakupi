@@ -1,0 +1,30 @@
+---
+- hosts: mocha-master
+  become: yes
+  tasks:    
+  - name: Add user '{{ pakupi_user }}' to cluster
+    user:
+      name: "{{ pakupi_user }}"
+      comment: "Created by pakupi util-adduser"
+      password: "{{ pakupi_password | password_hash('sha512', 'ms') }}"
+      # groups: sudo
+      # append: yes
+  - name: Rebuild NIS maps
+    block:
+      - name: Check if build required
+        command:
+          cmd: "make -q"
+          chdir: /var/yp
+        register: nis_mk
+        failed_when: 
+        - nis_mk.rc != 0
+        - nis_mk.rc != 1
+        changed_when: nis_mk.rc == 1
+      - name: Build required maps
+        command:
+          cmd: "make"
+          chdir: /var/yp
+        when: nis_mk.rc != 0
+  vars:
+      pakupi_user: "{{ undef(hint='You must specify the name of the user to create' }}" 
+      pakupi_password: "{{ undef(hint='You must specify the password of the user to create' }}"
