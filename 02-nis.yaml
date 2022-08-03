@@ -1,9 +1,13 @@
 ---
+- hosts: mocha-master
+  gather_facts: yes
 - hosts: all
   tasks:
   - set_fact:
       nis_domain: "{{ pakupi_nis_domain }}"
-      nis_master: "{{ pakupi_nis_master }}"
+      nis_master: "{{  hostvars[groups['mocha-master'] | first].ansible_facts.all_ipv4_addresses | ansible.utils.ipaddr(pakupi_net) | first }}"
+    vars:
+      pakupi_net: "{{ pakupi_dhcp_network }}/{{ pakupi_dhcp_netmask }}"
 - hosts: mocha-master
   become: yes
   tasks:
