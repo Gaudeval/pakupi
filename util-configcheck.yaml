@@ -1,0 +1,40 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+  - name: Define pakupi network
+    set_fact:
+      pakupi_net: "{{ pakupi_network }}/{{ pakupi_network_mask }}"
+  - name: Check pakupi network definition
+    fail:
+      msg: "Invalid pakupi network definition"
+    when: (pakupi_network | ansible.utils.ipaddr(pakupi_network)) != pakupi_network
+  - name: Check pakupi network mask definition
+    fail:
+      msg: "Invalid pakupi network mask definition"
+    when: not pakupi_net | ansible.utils.ipaddr('net')
+  - name: Check pakupi DHCP range definition
+    fail:
+      msg: "Invalid pakupi DHCP range begin"
+    when: not pakupi_net | ansible.utils.network_in_usable (pakupi_dhcp_range.begin)
+  - name: Check pakupi DHCP range definition
+    fail:
+      msg: "Invalid pakupi DHCP range end"
+    when: not pakupi_net | ansible.utils.network_in_usable (pakupi_dhcp_range.end)
+  - name: Check Slurm partitions exist
+    fail:
+      msg: "Ansible group '{{ item }}' does not exist"
+    when: item not in groups
+    loop: "{{ pakupi_slurm_partitions }}"    
+- hosts: mocha-master
+  tasks:
+  - name: Define pakupi network
+    set_fact:
+      pakupi_net: "{{ pakupi_network }}/{{ pakupi_network_mask }}"
+  - name: Check controller has address on network
+    fail:
+      msg: "Controller has no access to pakupi network"
+    when: ansible_facts.all_ipv4_addresses | ansible.utils.ipaddr(pakupi_net) | length == 0 
+    
+# the pakupi domain is a valid one
