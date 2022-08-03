@@ -125,6 +125,13 @@
       backup: yes
     loop:
     - passwd
+    
+  - name: "Allow all users to connect ({{ item }}"
+    lineinfile:
+      path: "/etc/{{ item }}"
+      line: "+::::::::"
+      backup: yes
+    loop:
     - shadow
 
   - name: "Allow all groups to connect ({{ item }}"
