@@ -31,8 +31,9 @@
   vars: 
     dhcp_host_template:
       name: "{{ item }}"
-      mac: "{{  hostvars[item].ansible_facts[dict(hostvars[item].ansible_facts.interfaces | map('extract', hostvars[item].ansible_facts, ['ipv4', 'address']) | zip(hostvars[item].ansible_facts.interfaces))[hostvars[item].ansible_facts.all_ipv4_addresses | ansible.utils.ipaddr(pakupi_net) | first]].macaddress | default(hostvars[item].macaddress) }}"
+      mac: "{{  hostvars[item].macaddress }}"
       ip: "{{ hostvars[item].ansible_host }}"
       hostname: "{{ item }}.{{ pakupi_domain }}"
     pakupi_net: "{{ pakupi_network }}/{{ pakupi_network_mask }}"
-
+    
+   # hostvars[item].ansible_facts[dict(hostvars[item].ansible_facts.interfaces | map('extract', hostvars[item].ansible_facts, ['ipv4', 'address']) | zip(hostvars[item].ansible_facts.interfaces))[hostvars[item].ansible_facts.all_ipv4_addresses | ansible.utils.ipaddr(pakupi_net) | first]].macaddress
