@@ -23,6 +23,12 @@
   - pakupi_worker
   gather_facts: yes
   tasks:
+  - name: "Prevent cloud-init interference with hostname"
+    become: yes
+    lineinfile:
+      path: /etc/cloud/cloud.cfg
+      regexp: "^preserve_hostname:"
+      line: "preserve_hostname: true"
   - name: "Set hostname to {{ inventory_hostname }}"
     become: yes
     ansible.builtin.hostname:
