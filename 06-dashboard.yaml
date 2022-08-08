@@ -31,21 +31,21 @@
     - name: Download prometheus slurm exporter
       git:
         repo: https://github.com/vpenso/prometheus-slurm-exporter.git
-        dest: "{{ pse_builddir }}/prometheus-slurm-exporter"
+        dest: "{{ pse_builddir.path }}/prometheus-slurm-exporter"
         version: '0.20'
     - name: "Fix unknown variables on build (Gaudeval/pakupi/issues/14)"
       lineinfile:
-        path: "{{ pse_builddir }}/prometheus-slurm-exporter/Makefile"
+        path: "{{ pse_builddir.path }}/prometheus-slurm-exporter/Makefile"
         regexp: '^SHELL :='
         line: 'SHELL := $(shell which bash) -e -o pipefail'
     - name: Build slurm exporter
       make:
-        chdir: "{{ pse_builddir }}/prometheus-slurm-exporter"
+        chdir: "{{ pse_builddir.path }}/prometheus-slurm-exporter"
     - name: Install slurm exporter
       become: yes
       copy:
         dest: /usr/local/bin/prometheus-slurm-exporter
-        src: "{{ pse_builddir }}/prometheus-slurm-exporter/bin/prometheus-slurm-exporter"
+        src: "{{ pse_builddir.path }}/prometheus-slurm-exporter/bin/prometheus-slurm-exporter"
         remote_src: yes
         owner: root
         group: root
