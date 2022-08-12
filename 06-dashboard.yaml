@@ -96,7 +96,7 @@
     become: yes
     service:
       name: prometheus
-      state: started # Check config with http://<ip>:9090/classic/graph 
+      state: restarted # Check config with http://<ip>:9090/classic/graph 
       enabled: yes
       
   # Install and configure grafana
