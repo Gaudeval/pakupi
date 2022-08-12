@@ -2,18 +2,19 @@
 - hosts: pakupi_controller
   become: yes
   tasks:
-  - name: Gather facts from all hosts
-    ansible.builtin.setup:
-    delegate_to: "{{ item }}"
-    delegate_facts: true
-    loop: "{{ groups['all'] }}"
-    ignore_unreachable: true
+  # - name: Gather facts from all hosts
+    # ansible.builtin.setup:
+    # delegate_to: "{{ item }}"
+    # delegate_facts: true
+    # loop: "{{ groups['all'] }}"
+    # ignore_unreachable: true
   - name: Build DHCP host list
     set_fact:
       dhcp_hosts: "{{ (dhcp_hosts | default([])) + [dhcp_host_template] }}"
     loop: "{{ groups['all'] }}"
   - name: Build DHCP default range configuration
     set_fact:
+      dhcp_global_routers: "{{ pakupi_dhcp_gateway }}"
       dhcp_subnets:
       - ip: "{{ pakupi_network }}"
         netmask: "{{ pakupi_network_mask }}"
@@ -34,6 +35,7 @@
       mac: "{{  hostvars[item].macaddress }}"
       ip: "{{ hostvars[item].ansible_host }}"
       hostname: "{{ item }}.{{ pakupi_domain }}"
+      routers: "{{ pakupi_dhcp_gateway }}"
     pakupi_net: "{{ pakupi_network }}/{{ pakupi_network_mask }}"
     
    # hostvars[item].ansible_facts[dict(hostvars[item].ansible_facts.interfaces | map('extract', hostvars[item].ansible_facts, ['ipv4', 'address']) | zip(hostvars[item].ansible_facts.interfaces))[hostvars[item].ansible_facts.all_ipv4_addresses | ansible.utils.ipaddr(pakupi_net) | first]].macaddress
