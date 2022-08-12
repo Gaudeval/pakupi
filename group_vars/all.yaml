@@ -1,16 +1,15 @@
 ---
 pakupi_domain: "pakupi.local"
-pakupi_network: 192.168.64.0
+pakupi_network: 192.168.137.0
 pakupi_network_mask: 255.255.255.0
 
 # DHCP Configuration
 pakupi_dhcp_range:
-  begin: 192.168.64.64
-  end: 192.168.64.127
+  begin: 192.168.137.200
+  end: 192.168.137.254
 pakupi_dhcp_dns:
-- 8.8.8.8
-- 8.8.4.4
-pakupi_dhcp_gateway: # TODO Implement
+- 192.168.137.1
+pakupi_dhcp_gateway: 192.168.137.1
 
 # NIS Configuration
 pakupi_nis_domain: "nis.pakupi.local"
