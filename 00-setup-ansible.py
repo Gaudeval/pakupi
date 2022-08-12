@@ -34,7 +34,7 @@ def setup_worker(c):
 def find_inventory_hosts(inventory):
     loader = ansible.parsing.dataloader.DataLoader()
     inventory_manager = ansible.inventory.manager.InventoryManager(loader=loader, sources=[inventory])
-    return set(map(lambda i: i.get_vars()["ansible_host"], inventory_manager.list_hosts("workers")))
+    return list(map(lambda i: i.get_vars()["ansible_host"], inventory_manager.list_hosts("all")))
 
 
 if __name__ == "__main__":
