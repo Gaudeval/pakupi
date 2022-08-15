@@ -4,7 +4,7 @@
   {% set f = hostvars[node].ansible_facts %}
   {% set threads_per_core = f.processor_threads_per_core %}
   {% set cores = f.processor_vcpus / threads_per_core %}
-  {% set cpus = cores / f.processor_nproc %}
+  {% set cpus = f.processor_count %}
   {
     "name": "{{ node }}",
     "CoresPerSocket": "{{ (cores/cpus)|int }}",
